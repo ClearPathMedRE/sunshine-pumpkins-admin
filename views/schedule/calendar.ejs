@@ -1,5 +1,10 @@
 <% locals.loadCalendar = true; %>
 
+<!-- Market Selector -->
+<div class="d-flex justify-content-end mb-3">
+  <%- include('../partials/market-selector') %>
+</div>
+
 <div class="card border-0 shadow-sm mb-4">
   <div class="card-body">
     <div id="calendar"></div>
@@ -96,7 +101,13 @@
           center: 'title',
           right: 'dayGridMonth,timeGridWeek,listWeek'
         },
-        events: '/schedule/api/events',
+        events: {
+          url: '/schedule/api/events',
+          extraParams: function() {
+            const marketVal = document.getElementById('marketFilter') ? document.getElementById('marketFilter').value : '';
+            return marketVal ? { market: marketVal } : {};
+          }
+        },
         eventClick: function(info) {
           if (info.event.extendedProps && info.event.extendedProps.order_id) {
             window.location.href = '/orders/' + info.event.extendedProps.order_id;

@@ -4,6 +4,11 @@
   }
 %>
 
+<!-- Market Selector -->
+<div class="d-flex justify-content-end mb-3">
+  <%- include('../partials/market-selector') %>
+</div>
+
 <!-- Stat Cards -->
 <div class="row g-3 mb-4">
   <div class="col-sm-6 col-xl-3">
@@ -113,7 +118,20 @@
   </div>
 </div>
 
+<!-- Revenue by Market -->
+<div class="row g-3 mb-4">
+  <div class="col-12">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-white fw-semibold">Revenue by Market</div>
+      <div class="card-body">
+        <canvas id="revenueByMarketChart"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
+  const revenueByMarket = <%- locals.revenueByMarket || '[]' %>;
   const revenueByPackage = <%- JSON.stringify(locals.revenueByPackage || {}) %>;
   const revenueByMonth = <%- JSON.stringify(locals.revenueByMonth || {}) %>;
   const sourceBreakdown = <%- JSON.stringify(locals.sourceBreakdown || {}) %>;
@@ -189,6 +207,33 @@
         responsive: true,
         plugins: {
           legend: { position: 'bottom', labels: { boxWidth: 12 } }
+        }
+      }
+    });
+  }
+
+  // Revenue by Market - Bar Chart
+  if (document.getElementById('revenueByMarketChart') && revenueByMarket.length) {
+    const marketColors = ['#E8621A', '#3D2B1F', '#0d6efd', '#198754', '#ffc107', '#6f42c1', '#dc3545'];
+    new Chart(document.getElementById('revenueByMarketChart'), {
+      type: 'bar',
+      data: {
+        labels: revenueByMarket.map(function(m) { return m.market_name || 'Unknown'; }),
+        datasets: [{
+          label: 'Revenue ($)',
+          data: revenueByMarket.map(function(m) { return m.revenue; }),
+          backgroundColor: marketColors.slice(0, revenueByMarket.length),
+          borderRadius: 4
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: { callback: function(v) { return '$' + v.toLocaleString(); } }
+          }
         }
       }
     });

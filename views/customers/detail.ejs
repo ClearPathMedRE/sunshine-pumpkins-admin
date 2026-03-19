@@ -36,6 +36,8 @@
           <dd class="col-sm-8"><%= customer.address || '' %><% if (customer.city) { %>, <%= customer.city %><% } %><% if (customer.state) { %>, <%= customer.state %><% } %> <%= customer.zip || '' %></dd>
           <dt class="col-sm-4">Neighborhood</dt>
           <dd class="col-sm-8"><%= customer.neighborhood || 'N/A' %></dd>
+          <dt class="col-sm-4">Market</dt>
+          <dd class="col-sm-8"><span class="badge" style="background-color: var(--pumpkin);"><%= customer.market_name || 'N/A' %></span></dd>
           <dt class="col-sm-4">Source</dt>
           <dd class="col-sm-8"><span class="badge bg-info"><%= customer.source || 'N/A' %></span></dd>
           <% if (customer.notes) { %>

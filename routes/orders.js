@@ -2,17 +2,21 @@ const express = require('express');
 const router = express.Router();
 const Order = require('../models/Order');
 const Package = require('../models/Package');
+const Market = require('../models/Market');
 const { requireAdmin } = require('../middleware/auth');
 
 // GET /orders
 router.get('/', (req, res, next) => {
   try {
-    const { status, package_id, season, delivery_window, page } = req.query;
+    const { status, package_id, season, delivery_window, page, market } = req.query;
+    const marketId = market || '';
+    const markets = Market.list();
     const filters = {
       status: status || undefined,
       package_id: package_id || undefined,
       season: season || undefined,
       delivery_window: delivery_window || undefined,
+      marketId: marketId || undefined,
       page: parseInt(page) || 1,
       limit: 25
     };
@@ -27,7 +31,9 @@ router.get('/', (req, res, next) => {
       page: filters.page,
       limit: filters.limit,
       filters: { status, package_id, season, delivery_window },
-      packages
+      packages,
+      markets,
+      selectedMarket: marketId
     });
   } catch (err) {
     next(err);

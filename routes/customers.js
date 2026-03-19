@@ -1,15 +1,19 @@
 const express = require('express');
 const router = express.Router();
 const Customer = require('../models/Customer');
+const Market = require('../models/Market');
 const { requireAdmin } = require('../middleware/auth');
 
 // GET /customers
 router.get('/', (req, res, next) => {
   try {
-    const { search, tag, page } = req.query;
+    const { search, tag, page, market } = req.query;
+    const marketId = market || '';
+    const markets = Market.list();
     const filters = {
       search: search || undefined,
       tag: tag || undefined,
+      marketId: marketId || undefined,
       page: parseInt(page) || 1,
       limit: 25
     };
@@ -24,7 +28,9 @@ router.get('/', (req, res, next) => {
       page: filters.page,
       limit: filters.limit,
       filters: { search, tag },
-      tags
+      tags,
+      markets,
+      selectedMarket: marketId
     });
   } catch (err) {
     next(err);
@@ -46,9 +52,12 @@ router.get('/export', requireAdmin, (req, res, next) => {
 // GET /customers/new
 router.get('/new', requireAdmin, (req, res, next) => {
   try {
+    const markets = Market.list();
     res.renderPage('customers/edit', {
       pageTitle: 'New Customer',
-      customer: null
+      customer: null,
+      markets,
+      selectedMarket: ''
     });
   } catch (err) {
     next(err);
@@ -58,11 +67,11 @@ router.get('/new', requireAdmin, (req, res, next) => {
 // POST /customers
 router.post('/', requireAdmin, (req, res, next) => {
   try {
-    const { email, name, phone, address_line1, address_line2, city, state, zip, notes } = req.body;
+    const { email, name, phone, address_line1, address_line2, city, state, zip, notes, market_id } = req.body;
     const customer = Customer.create({
       email, name, phone,
       address_line1, address_line2, city, state, zip,
-      notes
+      notes, market_id: market_id || undefined
     });
     req.session.flash = { type: 'success', message: 'Customer created successfully.' };
     res.redirect(`/customers/${customer.id}`);
@@ -82,9 +91,13 @@ router.get('/:id', (req, res, next) => {
       return res.redirect('/customers');
     }
 
+    const markets = Market.list();
+
     res.renderPage('customers/detail', {
       pageTitle: customer.name || customer.email,
-      customer
+      customer,
+      markets,
+      selectedMarket: ''
     });
   } catch (err) {
     next(err);
@@ -100,9 +113,13 @@ router.get('/:id/edit', requireAdmin, (req, res, next) => {
       return res.redirect('/customers');
     }
 
+    const markets = Market.list();
+
     res.renderPage('customers/edit', {
       pageTitle: `Edit ${customer.name || customer.email}`,
-      customer
+      customer,
+      markets,
+      selectedMarket: customer.market_id || ''
     });
   } catch (err) {
     next(err);
@@ -112,11 +129,11 @@ router.get('/:id/edit', requireAdmin, (req, res, next) => {
 // POST /customers/:id
 router.post('/:id', requireAdmin, (req, res, next) => {
   try {
-    const { email, name, phone, address_line1, address_line2, city, state, zip, notes } = req.body;
+    const { email, name, phone, address_line1, address_line2, city, state, zip, notes, market_id } = req.body;
     Customer.update(req.params.id, {
       email, name, phone,
       address_line1, address_line2, city, state, zip,
-      notes
+      notes, market_id: market_id || undefined
     });
     req.session.flash = { type: 'success', message: 'Customer updated successfully.' };
     res.redirect(`/customers/${req.params.id}`);

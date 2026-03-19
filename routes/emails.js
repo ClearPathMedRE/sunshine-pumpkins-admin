@@ -6,6 +6,7 @@ const nodemailer = require('nodemailer');
 const Email = require('../models/Email');
 const Order = require('../models/Order');
 const Customer = require('../models/Customer');
+const Market = require('../models/Market');
 
 const transporter = nodemailer.createTransport({
   host: process.env.MAIL_HOST,
@@ -100,10 +101,13 @@ router.post('/send', async (req, res, next) => {
 // GET /emails/log
 router.get('/log', (req, res, next) => {
   try {
-    const { customer_id, order_id, page } = req.query;
+    const { customer_id, order_id, page, market } = req.query;
+    const marketId = market || '';
+    const markets = Market.list();
     const result = Email.getLog({
       customer_id: customer_id || undefined,
       order_id: order_id || undefined,
+      marketId: marketId || undefined,
       page: parseInt(page) || 1,
       limit: 25
     });
@@ -114,7 +118,9 @@ router.get('/log', (req, res, next) => {
       total: result.total || 0,
       page: parseInt(page) || 1,
       limit: 25,
-      filters: { customer_id, order_id }
+      filters: { customer_id, order_id },
+      markets,
+      selectedMarket: marketId
     });
   } catch (err) {
     next(err);

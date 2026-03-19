@@ -81,5 +81,45 @@ const promoMigration = fs.readFileSync(path.resolve(__dirname, '..', 'migrations
 db.exec(promoMigration);
 console.log('Promo & referral tables created.');
 
+// Run markets migration
+console.log('Running markets migration...');
+try {
+  const marketsMigration = fs.readFileSync(path.resolve(__dirname, '..', 'migrations', '003_markets.sql'), 'utf8');
+  // Split and run statements individually (ALTER TABLE can't be in multi-statement exec with IF NOT EXISTS)
+  const statements = marketsMigration.split(';').map(s => s.trim()).filter(s => s.length > 0);
+  for (const stmt of statements) {
+    try { db.exec(stmt + ';'); } catch (e) { /* Column/table may already exist */ }
+  }
+  console.log('Markets migration complete.');
+} catch (e) {
+  console.log('Markets migration skipped (may already be applied):', e.message);
+}
+
+// Backfill customer market assignments
+console.log('Backfilling customer markets...');
+try {
+  const markets = db.prepare('SELECT * FROM markets').all();
+  for (const market of markets) {
+    const prefixes = JSON.parse(market.zip_prefixes);
+    for (const prefix of prefixes) {
+      db.prepare('UPDATE customers SET market_id = ? WHERE market_id IS NULL AND zip LIKE ?')
+        .run(market.id, prefix + '%');
+    }
+  }
+  // Default remaining unmatched to Tampa Bay (id=1)
+  db.prepare('UPDATE customers SET market_id = 1 WHERE market_id IS NULL').run();
+  console.log('Customer markets backfilled.');
+} catch (e) {
+  console.log('Market backfill skipped:', e.message);
+}
+
+// Seed Curated Collection package (new drop-off tier)
+insertPkg.run('curated-collection', 'Curated Collection', 175,
+  'A hand-picked selection of premium pumpkins delivered to your door. You arrange, we deliver.',
+  JSON.stringify(['6-8 curated pumpkins & gourds', 'Mix of carving, decorative & white varieties', 'Porch drop-off delivery included', 'Styling inspiration card included', 'Porch protection mat included']),
+  60, 90, 0
+);
+console.log('Curated Collection package seeded.');
+
 console.log('Seed complete.');
 process.exit(0);

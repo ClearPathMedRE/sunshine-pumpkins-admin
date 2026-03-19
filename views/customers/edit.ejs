@@ -64,6 +64,17 @@
                 <% }); %>
               </select>
             </div>
+            <div class="col-md-6">
+              <label for="market_id" class="form-label">Market</label>
+              <select class="form-select" id="market_id" name="market_id">
+                <option value="">Auto-detect from ZIP</option>
+                <% if (typeof markets !== 'undefined' && markets) { %>
+                  <% markets.forEach(function(m) { %>
+                    <option value="<%= m.id %>" <%= c.market_id == m.id ? 'selected' : '' %>><%= m.name %></option>
+                  <% }); %>
+                <% } %>
+              </select>
+            </div>
             <div class="col-12">
               <label for="notes" class="form-label">Notes</label>
               <textarea class="form-control" id="notes" name="notes" rows="3"><%= c.notes || '' %></textarea>

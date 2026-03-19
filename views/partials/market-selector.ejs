@@ -1,0 +1,18 @@
+<div class="market-selector-wrap">
+  <select id="marketFilter" class="form-select form-select-sm" style="max-width: 180px;" onchange="applyMarketFilter(this.value)">
+    <option value="">All Markets</option>
+    <% if (typeof markets !== 'undefined' && markets) { %>
+      <% markets.forEach(function(m) { %>
+        <option value="<%= m.id %>" <%= (typeof selectedMarket !== 'undefined' && selectedMarket == m.id) ? 'selected' : '' %>><%= m.name %></option>
+      <% }); %>
+    <% } %>
+  </select>
+</div>
+<script>
+function applyMarketFilter(val) {
+  const url = new URL(window.location.href);
+  if (val) { url.searchParams.set('market', val); } else { url.searchParams.delete('market'); }
+  url.searchParams.delete('page'); // Reset pagination
+  window.location.href = url.toString();
+}
+</script>

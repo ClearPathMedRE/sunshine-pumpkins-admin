@@ -11,7 +11,7 @@ const VALID_TRANSITIONS = {
 };
 
 const Order = {
-  list({ status, package_id, season, delivery_window, page = 1, limit = 25 } = {}) {
+  list({ status, package_id, season, delivery_window, marketId, page = 1, limit = 25 } = {}) {
     let where = [];
     let params = [];
 
@@ -19,15 +19,24 @@ const Order = {
     if (package_id) { where.push('o.package_id = ?'); params.push(package_id); }
     if (season) { where.push('o.season = ?'); params.push(season); }
     if (delivery_window) { where.push('o.delivery_window = ?'); params.push(delivery_window); }
+    if (marketId) { where.push('c.market_id = ?'); params.push(marketId); }
 
     const whereClause = where.length ? 'WHERE ' + where.join(' AND ') : '';
     const offset = (page - 1) * limit;
 
-    const total = db.prepare(`SELECT COUNT(*) as count FROM orders o ${whereClause}`).get(...params).count;
+    // When marketId is provided, use INNER JOIN to ensure we only count/return orders with matching customers
+    const joinType = marketId ? 'JOIN' : 'LEFT JOIN';
+
+    const total = db.prepare(`
+      SELECT COUNT(*) as count FROM orders o
+      ${joinType} customers c ON o.customer_id = c.id
+      ${whereClause}
+    `).get(...params).count;
+
     const rows = db.prepare(`
       SELECT o.*, c.first_name, c.last_name, c.email as customer_email, c.phone as customer_phone
       FROM orders o
-      LEFT JOIN customers c ON o.customer_id = c.id
+      ${joinType} customers c ON o.customer_id = c.id
       ${whereClause}
       ORDER BY o.created_at DESC LIMIT ? OFFSET ?
     `).all(...params, limit, offset);
@@ -106,23 +115,45 @@ const Order = {
     db.prepare("INSERT INTO order_items (order_id, item_type, reference_id, name, price) VALUES (?, 'package', ?, ?, ?)").run(orderId, package_id, package_name, package_price);
   },
 
-  recentOrders(limit = 10) {
+  recentOrders(limit = 10, marketId = null) {
+    let conditions = [];
+    let params = [];
+
+    if (marketId) {
+      conditions.push('c.market_id = ?');
+      params.push(marketId);
+    }
+
+    const whereClause = conditions.length ? 'WHERE ' + conditions.join(' AND ') : '';
+    params.push(limit);
+
     return db.prepare(`
       SELECT o.*, c.first_name, c.last_name FROM orders o
       LEFT JOIN customers c ON o.customer_id = c.id
+      ${whereClause}
       ORDER BY o.created_at DESC LIMIT ?
-    `).all(limit);
+    `).all(...params);
   },
 
-  upcomingInstalls(days = 7) {
+  upcomingInstalls(days = 7, marketId = null) {
+    let conditions = ["o.status = 'scheduled'", "s.scheduled_date BETWEEN date('now') AND date('now', '+' || ? || ' days')"];
+    let params = [days];
+
+    if (marketId) {
+      conditions.push('c.market_id = ?');
+      params.push(marketId);
+    }
+
+    const whereClause = 'WHERE ' + conditions.join(' AND ');
+
     return db.prepare(`
       SELECT o.*, c.first_name, c.last_name, s.scheduled_date, s.time_slot, s.assigned_to
       FROM orders o
       LEFT JOIN customers c ON o.customer_id = c.id
       LEFT JOIN schedule_assignments s ON s.order_id = o.id
-      WHERE o.status = 'scheduled' AND s.scheduled_date BETWEEN date('now') AND date('now', '+' || ? || ' days')
+      ${whereClause}
       ORDER BY s.scheduled_date
-    `).all(days);
+    `).all(...params);
   }
 };
 

@@ -2,17 +2,22 @@ const express = require('express');
 const router = express.Router();
 const Schedule = require('../models/Schedule');
 const Order = require('../models/Order');
+const Market = require('../models/Market');
 const { requireAdmin } = require('../middleware/auth');
 
 // GET /schedule
 router.get('/', (req, res, next) => {
   try {
+    const marketId = req.query.market || '';
+    const markets = Market.list();
     const unscheduledOrders = Schedule.unscheduledOrders();
 
     res.renderPage('schedule/calendar', {
       pageTitle: 'Schedule',
       unscheduledOrders,
-      loadCalendar: true
+      loadCalendar: true,
+      markets,
+      selectedMarket: marketId
     });
   } catch (err) {
     next(err);
@@ -22,8 +27,9 @@ router.get('/', (req, res, next) => {
 // GET /schedule/api/events — JSON for FullCalendar
 router.get('/api/events', (req, res, next) => {
   try {
-    const { start, end } = req.query;
-    const events = Schedule.getEvents(start, end);
+    const { start, end, market } = req.query;
+    const marketId = market || null;
+    const events = Schedule.getEvents(start, end, marketId);
 
     const formatted = events.map(evt => ({
       id: evt.id,
@@ -48,12 +54,16 @@ router.get('/api/events', (req, res, next) => {
 // GET /schedule/daily/:date
 router.get('/daily/:date', (req, res, next) => {
   try {
-    const slots = Schedule.getDailySlots(req.params.date);
+    const marketId = req.query.market || null;
+    const markets = Market.list();
+    const slots = Schedule.getDailySlots(req.params.date, marketId);
 
     res.renderPage('schedule/daily', {
       pageTitle: `Schedule — ${req.params.date}`,
       date: req.params.date,
-      slots
+      slots,
+      markets,
+      selectedMarket: marketId || ''
     });
   } catch (err) {
     next(err);
