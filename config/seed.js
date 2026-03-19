@@ -49,7 +49,7 @@ insertAddon.run('business', 'Business Storefront Display', 1500, 'Custom commerc
 console.log('Add-ons seeded.');
 
 // Seed admin user
-const adminEmail = process.env.ADMIN_EMAIL || 'admin@sunshinepumpkins.com';
+const adminEmail = process.env.ADMIN_EMAIL || 'jamestgarner@gmail.com';
 const adminPassword = process.env.ADMIN_PASSWORD || 'changeme123!';
 
 const existing = db.prepare('SELECT id FROM users WHERE email = ?').get(adminEmail);
