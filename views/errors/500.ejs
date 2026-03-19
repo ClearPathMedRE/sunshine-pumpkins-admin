@@ -1,0 +1,8 @@
+<div class="text-center py-5">
+  <h1 class="display-1 text-danger">500</h1>
+  <p class="lead">Something went wrong</p>
+  <% if (typeof error !== 'undefined' && error.message) { %>
+    <pre class="text-start bg-light p-3 rounded mt-3"><%= error.message %></pre>
+  <% } %>
+  <a href="/" class="btn btn-primary mt-3">Back to Dashboard</a>
+</div>

@@ -1,0 +1,44 @@
+<%
+  const u = locals.user || {};
+  const isNew = !u.id;
+%>
+
+<div class="row justify-content-center">
+  <div class="col-lg-6">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white fw-semibold">
+        <i class="bi bi-person-gear me-1"></i> <%= isNew ? 'Add New User' : 'Edit User' %>
+      </div>
+      <div class="card-body">
+        <form action="<%= isNew ? '/users' : '/users/' + u.id + '/edit' %>" method="POST">
+          <div class="mb-3">
+            <label for="name" class="form-label">Name <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="name" name="name" value="<%= u.name || '' %>" required>
+          </div>
+          <div class="mb-3">
+            <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
+            <input type="email" class="form-control" id="email" name="email" value="<%= u.email || '' %>" required>
+          </div>
+          <div class="mb-3">
+            <label for="role" class="form-label">Role <span class="text-danger">*</span></label>
+            <select class="form-select" id="role" name="role" required>
+              <option value="staff" <%= u.role === 'staff' ? 'selected' : '' %>>Staff</option>
+              <option value="admin" <%= u.role === 'admin' ? 'selected' : '' %>>Admin</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="password" class="form-label">Password <% if (isNew) { %><span class="text-danger">*</span><% } else { %><span class="text-muted small">(leave blank to keep current)</span><% } %></label>
+            <input type="password" class="form-control" id="password" name="password" <%= isNew ? 'required' : '' %> minlength="8" placeholder="<%= isNew ? 'Enter password' : 'Leave blank to keep current' %>">
+          </div>
+
+          <div class="d-flex gap-2 mt-4">
+            <button type="submit" class="btn" style="background-color: var(--pumpkin); color: #fff;">
+              <i class="bi bi-check-lg me-1"></i> Save
+            </button>
+            <a href="/users" class="btn btn-outline-secondary">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

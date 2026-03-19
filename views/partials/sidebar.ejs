@@ -1,0 +1,84 @@
+<%
+  const path = locals.currentPath || '';
+  const user = locals.currentUser || {};
+  const isAdmin = user.role === 'admin';
+  const navItems = [
+    { href: '/', icon: 'bi-speedometer2', label: 'Dashboard' },
+    { href: '/orders', icon: 'bi-receipt', label: 'Orders' },
+    { href: '/customers', icon: 'bi-people', label: 'Customers' },
+    { href: '/packages', icon: 'bi-box-seam', label: 'Packages' },
+    { href: '/schedule', icon: 'bi-calendar3', label: 'Schedule' },
+    { href: '/emails/log', icon: 'bi-envelope', label: 'Emails' },
+  ];
+  navItems.push({ href: '/referrals', icon: 'bi-link-45deg', label: 'Referrals' });
+  if (isAdmin) {
+    navItems.push({ href: '/settings', icon: 'bi-gear', label: 'Settings' });
+    navItems.push({ href: '/analytics', icon: 'bi-graph-up', label: 'Analytics' });
+    navItems.push({ href: '/users', icon: 'bi-person-gear', label: 'Users' });
+  }
+%>
+
+<!-- Mobile toggle button -->
+<button class="btn btn-dark d-md-none position-fixed top-0 start-0 m-2 z-3" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarOffcanvas" aria-controls="sidebarOffcanvas">
+  <i class="bi bi-list fs-4"></i>
+</button>
+
+<!-- Sidebar for desktop -->
+<nav id="sidebar" class="d-none d-md-flex flex-column flex-shrink-0 p-3" style="width: 250px; min-height: 100vh; background-color: #2A1E16;">
+  <a href="/" class="d-flex align-items-center mb-3 text-decoration-none" style="color: var(--pumpkin);">
+    <span class="fs-4 fw-bold">&#127875; SP Admin</span>
+  </a>
+  <hr class="text-secondary">
+  <ul class="nav nav-pills flex-column mb-auto">
+    <% navItems.forEach(function(item) { %>
+      <% const isActive = (item.href === '/' && path === '/') || (item.href !== '/' && path.startsWith(item.href)); %>
+      <li class="nav-item">
+        <a href="<%= item.href %>" class="nav-link text-white <%= isActive ? 'active' : '' %>" <% if (isActive) { %>style="background-color: var(--pumpkin);"<% } %>>
+          <i class="bi <%= item.icon %> me-2"></i> <%= item.label %>
+        </a>
+      </li>
+    <% }); %>
+  </ul>
+  <hr class="text-secondary">
+  <form action="/logout" method="POST">
+    <button type="submit" class="btn btn-outline-secondary w-100 mb-3">
+      <i class="bi bi-box-arrow-left me-2"></i> Logout
+    </button>
+  </form>
+  <div class="text-secondary small">
+    <i class="bi bi-person-circle me-1"></i> <%= user.name || 'User' %>
+    <span class="badge bg-secondary ms-1"><%= user.role || 'staff' %></span>
+  </div>
+</nav>
+
+<!-- Offcanvas sidebar for mobile -->
+<div class="offcanvas offcanvas-start d-md-none" tabindex="-1" id="sidebarOffcanvas" style="background-color: #2A1E16; width: 250px;">
+  <div class="offcanvas-header">
+    <a href="/" class="text-decoration-none" style="color: var(--pumpkin);">
+      <span class="fs-4 fw-bold">&#127875; SP Admin</span>
+    </a>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+  </div>
+  <div class="offcanvas-body d-flex flex-column">
+    <ul class="nav nav-pills flex-column mb-auto">
+      <% navItems.forEach(function(item) { %>
+        <% const isActive = (item.href === '/' && path === '/') || (item.href !== '/' && path.startsWith(item.href)); %>
+        <li class="nav-item">
+          <a href="<%= item.href %>" class="nav-link text-white <%= isActive ? 'active' : '' %>" <% if (isActive) { %>style="background-color: var(--pumpkin);"<% } %>>
+            <i class="bi <%= item.icon %> me-2"></i> <%= item.label %>
+          </a>
+        </li>
+      <% }); %>
+    </ul>
+    <hr class="text-secondary">
+    <form action="/logout" method="POST">
+      <button type="submit" class="btn btn-outline-secondary w-100 mb-3">
+        <i class="bi bi-box-arrow-left me-2"></i> Logout
+      </button>
+    </form>
+    <div class="text-secondary small">
+      <i class="bi bi-person-circle me-1"></i> <%= user.name || 'User' %>
+      <span class="badge bg-secondary ms-1"><%= user.role || 'staff' %></span>
+    </div>
+  </div>
+</div>

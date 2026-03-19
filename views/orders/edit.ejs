@@ -1,0 +1,86 @@
+<%
+  function formatCurrency(val) {
+    return '$' + Number(val || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+  const currentAddonIds = (locals.orderAddons || []).map(a => a.addon_id || a.id);
+%>
+
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white fw-semibold">
+        <i class="bi bi-pencil-square me-1"></i> Amend Order #<%= order.order_number || order.id %>
+      </div>
+      <div class="card-body">
+        <div class="mb-3 p-3 bg-light rounded">
+          <strong>Customer:</strong> <%= order.customer_name %><br>
+          <strong>Current Package:</strong> <%= order.package_name %><br>
+          <strong>Current Total:</strong> <%= formatCurrency(order.total) %>
+        </div>
+
+        <form action="/orders/<%= order.id %>/edit" method="POST" id="editOrderForm">
+          <!-- Package Selection -->
+          <div class="mb-4">
+            <label for="package_id" class="form-label fw-semibold">Package</label>
+            <select name="package_id" id="package_id" class="form-select" onchange="recalcTotal()">
+              <% if (locals.packages) { packages.forEach(function(pkg) { %>
+                <option value="<%= pkg.id %>" data-price="<%= pkg.price %>" <%= (order.package_id == pkg.id) ? 'selected' : '' %>>
+                  <%= pkg.name %> - <%= formatCurrency(pkg.price) %>
+                </option>
+              <% }); } %>
+            </select>
+          </div>
+
+          <!-- Add-ons -->
+          <div class="mb-4">
+            <label class="form-label fw-semibold">Add-ons</label>
+            <% if (locals.addons && addons.length) { %>
+              <% addons.forEach(function(addon) { %>
+                <div class="form-check mb-2">
+                  <input class="form-check-input addon-check" type="checkbox" name="addon_ids[]" value="<%= addon.id %>"
+                    id="addon_<%= addon.id %>" data-price="<%= addon.price %>"
+                    <%= currentAddonIds.includes(addon.id) ? 'checked' : '' %>
+                    onchange="recalcTotal()">
+                  <label class="form-check-label" for="addon_<%= addon.id %>">
+                    <%= addon.name %> <span class="text-muted">(<%= formatCurrency(addon.price) %>)</span>
+                  </label>
+                </div>
+              <% }); %>
+            <% } else { %>
+              <p class="text-muted">No add-ons available</p>
+            <% } %>
+          </div>
+
+          <!-- New Total -->
+          <div class="mb-4 p-3 rounded" style="background-color: #E8621A10; border: 1px solid #E8621A40;">
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="fw-semibold fs-5">New Total:</span>
+              <span class="fw-bold fs-4" id="newTotal" style="color: var(--pumpkin);"><%= formatCurrency(order.total) %></span>
+            </div>
+          </div>
+
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn" style="background-color: var(--pumpkin); color: #fff;">
+              <i class="bi bi-check-lg me-1"></i> Save Changes
+            </button>
+            <a href="/orders/<%= order.id %>" class="btn btn-outline-secondary">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function recalcTotal() {
+    const pkgSelect = document.getElementById('package_id');
+    const selectedOption = pkgSelect.options[pkgSelect.selectedIndex];
+    let total = parseFloat(selectedOption.dataset.price) || 0;
+
+    document.querySelectorAll('.addon-check:checked').forEach(function(cb) {
+      total += parseFloat(cb.dataset.price) || 0;
+    });
+
+    document.getElementById('newTotal').textContent = '$' + total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+</script>

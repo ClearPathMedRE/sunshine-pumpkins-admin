@@ -1,0 +1,65 @@
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="mb-0"><%= code ? 'Edit Discount Code' : 'New Discount Code' %></h4>
+  <a href="/settings" class="btn btn-outline-secondary">
+    <i class="bi bi-arrow-left me-1"></i> Back to Settings
+  </a>
+</div>
+
+<div class="card border-0 shadow-sm">
+  <div class="card-body">
+    <form action="<%= code ? '/settings/codes/' + code.id : '/settings/codes' %>" method="POST">
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label for="code" class="form-label">Code <span class="text-danger">*</span></label>
+          <input type="text" class="form-control text-uppercase" id="code" name="code" value="<%= code ? code.code : '' %>" required style="text-transform: uppercase;">
+          <small class="text-muted">Unique code customers will enter (auto-uppercased)</small>
+        </div>
+        <div class="col-md-3 mb-3">
+          <label for="discount_type" class="form-label">Discount Type</label>
+          <select class="form-select" id="discount_type" name="discount_type">
+            <option value="fixed" <%= code && code.discount_type === 'fixed' ? 'selected' : '' %>>Fixed ($)</option>
+            <option value="percent" <%= code && code.discount_type === 'percent' ? 'selected' : '' %>>Percentage (%)</option>
+          </select>
+        </div>
+        <div class="col-md-3 mb-3">
+          <label for="discount_value" class="form-label">Value</label>
+          <input type="number" class="form-control" id="discount_value" name="discount_value" step="0.01" min="0" value="<%= code ? code.discount_value : '0' %>">
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label for="description" class="form-label">Description</label>
+        <input type="text" class="form-control" id="description" name="description" value="<%= code ? code.description || '' : '' %>">
+      </div>
+
+      <div class="row">
+        <div class="col-md-4 mb-3">
+          <label for="expires_at" class="form-label">Expires At</label>
+          <input type="date" class="form-control" id="expires_at" name="expires_at" value="<%= code && code.expires_at ? code.expires_at.substring(0, 10) : '' %>">
+          <small class="text-muted">Leave blank for no expiration</small>
+        </div>
+        <div class="col-md-4 mb-3">
+          <label for="max_uses" class="form-label">Max Uses</label>
+          <input type="number" class="form-control" id="max_uses" name="max_uses" min="0" value="<%= code && code.max_uses ? code.max_uses : '' %>">
+          <small class="text-muted">Leave blank for unlimited</small>
+        </div>
+        <% if (code) { %>
+        <div class="col-md-4 mb-3">
+          <label class="form-label">Active</label>
+          <div class="form-check form-switch mt-2">
+            <input class="form-check-input" type="checkbox" role="switch" id="active" name="active" value="1" <%= code.active ? 'checked' : '' %>>
+            <label class="form-check-label" for="active">Enabled</label>
+          </div>
+        </div>
+        <% } %>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn" style="background-color: var(--pumpkin); color: #fff;">
+          <i class="bi bi-check-lg me-1"></i> <%= code ? 'Update Code' : 'Create Code' %>
+        </button>
+        <a href="/settings" class="btn btn-outline-secondary">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>

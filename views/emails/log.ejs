@@ -1,0 +1,75 @@
+<!-- Filter Bar -->
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-body">
+    <form method="GET" action="/emails/log" class="row g-2 align-items-end">
+      <div class="col-md-3">
+        <label class="form-label small">Template</label>
+        <select name="template" class="form-select form-select-sm">
+          <option value="">All Templates</option>
+          <% ['booking_confirmation','photo_request','install_scheduled','install_complete','post_season_upsell'].forEach(function(t) { %>
+            <option value="<%= t %>" <%= (locals.filters && filters.template === t) ? 'selected' : '' %>><%= t.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) %></option>
+          <% }); %>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label small">Status</label>
+        <select name="status" class="form-select form-select-sm">
+          <option value="">All</option>
+          <option value="sent" <%= (locals.filters && filters.status === 'sent') ? 'selected' : '' %>>Sent</option>
+          <option value="failed" <%= (locals.filters && filters.status === 'failed') ? 'selected' : '' %>>Failed</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label small">Recipient</label>
+        <input type="text" name="recipient" class="form-control form-control-sm" placeholder="Email..." value="<%= (locals.filters && filters.recipient) || '' %>">
+      </div>
+      <div class="col-md-3">
+        <button type="submit" class="btn btn-sm w-100" style="background-color: var(--pumpkin); color: #fff;">
+          <i class="bi bi-search me-1"></i> Filter
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Email Log Table -->
+<div class="card border-0 shadow-sm">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Date</th>
+            <th>Recipient</th>
+            <th>Subject</th>
+            <th>Template</th>
+            <th>Status</th>
+            <th>Sent By</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (locals.emails && emails.length) { %>
+            <% emails.forEach(function(email) { %>
+              <tr>
+                <td><%= new Date(email.sent_at).toLocaleString('en-US') %></td>
+                <td><%= email.recipient %></td>
+                <td><%= email.subject %></td>
+                <td><%= (email.template || '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) %></td>
+                <td>
+                  <span class="badge bg-<%= email.status === 'sent' ? 'success' : 'danger' %>">
+                    <%= email.status %>
+                  </span>
+                </td>
+                <td><%= email.sent_by || 'System' %></td>
+              </tr>
+            <% }); %>
+          <% } else { %>
+            <tr><td colspan="6" class="text-center text-muted py-4">No emails found</td></tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/pagination', { page: locals.page || 1, pages: locals.pages || 1, baseUrl: '/emails/log' }) %>

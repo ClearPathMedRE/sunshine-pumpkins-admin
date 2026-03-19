@@ -1,0 +1,93 @@
+<%
+  const templates = [
+    { value: 'booking_confirmation', label: 'Booking Confirmation' },
+    { value: 'photo_request', label: 'Photo Request' },
+    { value: 'install_scheduled', label: 'Install Scheduled' },
+    { value: 'install_complete', label: 'Install Complete' },
+    { value: 'post_season_upsell', label: 'Post-Season Upsell' }
+  ];
+%>
+
+<div class="row g-4">
+  <!-- Compose Form -->
+  <div class="col-lg-5">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white fw-semibold">
+        <i class="bi bi-pencil-square me-1"></i> Compose Email
+      </div>
+      <div class="card-body">
+        <form action="/emails/send" method="POST" id="emailForm">
+          <% if (locals.order) { %>
+            <input type="hidden" name="order_id" value="<%= order.id %>">
+          <% } %>
+          <% if (locals.customer) { %>
+            <input type="hidden" name="customer_id" value="<%= customer.id %>">
+          <% } %>
+
+          <div class="mb-3">
+            <label class="form-label">Recipient</label>
+            <input type="text" class="form-control" readonly value="<%= locals.customer ? (customer.first_name + ' ' + customer.last_name + ' <' + customer.email + '>') : '' %>">
+          </div>
+
+          <div class="mb-3">
+            <label for="template" class="form-label">Template</label>
+            <select class="form-select" id="template" name="template" onchange="previewTemplate()">
+              <option value="">Select a template...</option>
+              <% templates.forEach(function(t) { %>
+                <option value="<%= t.value %>" <%= (locals.selectedTemplate === t.value) ? 'selected' : '' %>><%= t.label %></option>
+              <% }); %>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label for="subject" class="form-label">Subject</label>
+            <input type="text" class="form-control" id="subject" name="subject" value="<%= locals.subject || '' %>">
+          </div>
+
+          <button type="submit" class="btn w-100" style="background-color: var(--pumpkin); color: #fff;">
+            <i class="bi bi-send me-1"></i> Send Email
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Preview -->
+  <div class="col-lg-7">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white fw-semibold">
+        <i class="bi bi-eye me-1"></i> Preview
+      </div>
+      <div class="card-body p-0">
+        <iframe id="previewFrame" class="w-100 border-0" style="min-height: 500px;"></iframe>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function previewTemplate() {
+    const template = document.getElementById('template').value;
+    if (!template) {
+      document.getElementById('previewFrame').srcdoc = '<div style="padding:2rem;color:#999;text-align:center;">Select a template to preview</div>';
+      return;
+    }
+    const orderId = '<%= locals.order ? order.id : "" %>';
+    const customerId = '<%= locals.customer ? customer.id : "" %>';
+    const url = '/emails/preview?template=' + template + '&order_id=' + orderId + '&customer_id=' + customerId;
+
+    fetch(url)
+      .then(res => res.text())
+      .then(html => {
+        document.getElementById('previewFrame').srcdoc = html;
+      })
+      .catch(() => {
+        document.getElementById('previewFrame').srcdoc = '<div style="padding:2rem;color:#dc3545;">Error loading preview</div>';
+      });
+  }
+
+  // Auto-preview if template is pre-selected
+  if (document.getElementById('template').value) {
+    previewTemplate();
+  }
+</script>

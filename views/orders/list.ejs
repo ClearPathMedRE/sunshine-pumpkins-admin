@@ -1,0 +1,105 @@
+<%
+  const statusColors = {
+    booked: 'primary', photo_requested: 'warning', design_prep: 'info',
+    scheduled: 'secondary', installed: 'success', completed: 'success', cancelled: 'danger'
+  };
+  function statusBadge(status) {
+    const color = statusColors[status] || 'secondary';
+    const label = (status || '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    return '<span class="badge bg-' + color + '">' + label + '</span>';
+  }
+  function formatCurrency(val) {
+    return '$' + Number(val || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+%>
+
+<!-- Filter Bar -->
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-body">
+    <form method="GET" action="/orders" class="row g-2 align-items-end">
+      <div class="col-md-3">
+        <label class="form-label small">Status</label>
+        <select name="status" class="form-select form-select-sm">
+          <option value="">All Statuses</option>
+          <% ['booked','photo_requested','design_prep','scheduled','installed','completed','cancelled'].forEach(function(s) { %>
+            <option value="<%= s %>" <%= (locals.filters && filters.status === s) ? 'selected' : '' %>><%= s.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) %></option>
+          <% }); %>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label small">Package</label>
+        <select name="package" class="form-select form-select-sm">
+          <option value="">All Packages</option>
+          <% if (locals.packages) { packages.forEach(function(pkg) { %>
+            <option value="<%= pkg.id %>" <%= (locals.filters && filters.package == pkg.id) ? 'selected' : '' %>><%= pkg.name %></option>
+          <% }); } %>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label small">Season</label>
+        <select name="season" class="form-select form-select-sm">
+          <option value="">All Seasons</option>
+          <% if (locals.seasons) { seasons.forEach(function(s) { %>
+            <option value="<%= s %>" <%= (locals.filters && filters.season === s) ? 'selected' : '' %>><%= s %></option>
+          <% }); } %>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label small">Delivery Window</label>
+        <select name="delivery_window" class="form-select form-select-sm">
+          <option value="">Any</option>
+          <% ['morning','afternoon','all-day'].forEach(function(w) { %>
+            <option value="<%= w %>" <%= (locals.filters && filters.delivery_window === w) ? 'selected' : '' %>><%= w.replace(/\b\w/g, c => c.toUpperCase()) %></option>
+          <% }); %>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <button type="submit" class="btn btn-sm w-100" style="background-color: var(--pumpkin); color: #fff;">Filter</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Orders Table -->
+<div class="card border-0 shadow-sm">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Order #</th>
+            <th>Customer</th>
+            <th>Package</th>
+            <th>Total</th>
+            <th>Status</th>
+            <th>Date</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (locals.orders && orders.length) { %>
+            <% orders.forEach(function(order) { %>
+              <tr>
+                <td><a href="/orders/<%= order.id %>">#<%= order.order_number || order.id %></a></td>
+                <td><%= order.customer_name %></td>
+                <td><%= order.package_name %></td>
+                <td><%= formatCurrency(order.total) %></td>
+                <td><%- statusBadge(order.status) %></td>
+                <td><%= new Date(order.created_at).toLocaleDateString('en-US') %></td>
+                <td>
+                  <a href="/orders/<%= order.id %>" class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-eye"></i> View
+                  </a>
+                </td>
+              </tr>
+            <% }); %>
+          <% } else { %>
+            <tr><td colspan="7" class="text-center text-muted py-4">No orders found</td></tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/pagination', { page: locals.page || 1, pages: locals.pages || 1, baseUrl: '/orders' }) %>

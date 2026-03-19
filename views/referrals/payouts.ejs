@@ -1,0 +1,94 @@
+<%
+  const isAdmin = locals.currentUser && locals.currentUser.role === 'admin';
+%>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="mb-0">Pending Payouts</h4>
+  <a href="/referrals" class="btn btn-outline-secondary">
+    <i class="bi bi-arrow-left me-1"></i> Back to Partners
+  </a>
+</div>
+
+<!-- Summary -->
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-body text-center">
+    <div class="text-muted small">Total Pending Amount</div>
+    <div class="fs-2 fw-bold text-warning">$<%= totalPending.toFixed(2) %></div>
+    <div class="text-muted"><%= payouts.length %> pending payout(s)</div>
+  </div>
+</div>
+
+<!-- Payouts Table -->
+<form action="/referrals/payouts/batch-pay" method="POST">
+  <div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead class="table-light">
+            <tr>
+              <% if (isAdmin) { %>
+              <th style="width: 40px;">
+                <input type="checkbox" class="form-check-input" id="selectAll">
+              </th>
+              <% } %>
+              <th>Partner</th>
+              <th>Order</th>
+              <th>Customer</th>
+              <th>Package</th>
+              <th>Amount</th>
+              <th>Date</th>
+              <% if (isAdmin) { %>
+              <th>Actions</th>
+              <% } %>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (payouts && payouts.length) { %>
+              <% payouts.forEach(function(p) { %>
+                <tr>
+                  <% if (isAdmin) { %>
+                  <td>
+                    <input type="checkbox" class="form-check-input payout-check" name="payout_ids" value="<%= p.id %>">
+                  </td>
+                  <% } %>
+                  <td class="fw-semibold"><a href="/referrals/<%= p.partner_id %>" class="text-decoration-none"><%= p.partner_name %></a></td>
+                  <td><% if (p.order_id) { %><a href="/orders/<%= p.order_id %>">#<%= p.order_id %></a><% } else { %>-<% } %></td>
+                  <td><%= p.first_name %> <%= p.last_name %></td>
+                  <td><%= p.package_name || '-' %></td>
+                  <td class="fw-bold">$<%= p.amount.toFixed(2) %></td>
+                  <td><%= new Date(p.created_at).toLocaleDateString('en-US') %></td>
+                  <% if (isAdmin) { %>
+                  <td>
+                    <form action="/referrals/payouts/<%= p.id %>/pay" method="POST" class="d-inline">
+                      <button type="submit" class="btn btn-sm btn-outline-success" title="Mark Paid">
+                        <i class="bi bi-check-lg"></i> Pay
+                      </button>
+                    </form>
+                  </td>
+                  <% } %>
+                </tr>
+              <% }); %>
+            <% } else { %>
+              <tr><td colspan="<%= isAdmin ? 8 : 6 %>" class="text-center text-muted py-4">No pending payouts</td></tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <% if (isAdmin && payouts.length) { %>
+    <div class="card-footer bg-white d-flex justify-content-end">
+      <button type="submit" class="btn btn-success">
+        <i class="bi bi-check-all me-1"></i> Pay Selected
+      </button>
+    </div>
+    <% } %>
+  </div>
+</form>
+
+<% if (isAdmin) { %>
+<script>
+document.getElementById('selectAll')?.addEventListener('change', function() {
+  document.querySelectorAll('.payout-check').forEach(cb => cb.checked = this.checked);
+});
+</script>
+<% } %>

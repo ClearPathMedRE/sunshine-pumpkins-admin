@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin:0; padding:0; background-color:#f5f5f5; font-family:Arial,Helvetica,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f5f5f5; padding:20px 0;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background-color:#ffffff; border-radius:8px; overflow:hidden;">
+          <!-- Header -->
+          <tr>
+            <td style="background-color:#E8621A; padding:30px; text-align:center;">
+              <h1 style="color:#ffffff; margin:0; font-size:28px;">&#127875; Sunshine Pumpkins</h1>
+            </td>
+          </tr>
+          <!-- Body -->
+          <tr>
+            <td style="padding:30px;">
+              <h2 style="color:#3D2B1F; margin-top:0;">Thanks for Booking!</h2>
+              <p style="color:#555; line-height:1.6;">Hi <%= customer.first_name %>,</p>
+              <p style="color:#555; line-height:1.6;">We're thrilled to confirm your pumpkin display booking! Here's a summary of your order:</p>
+
+              <table width="100%" cellpadding="8" cellspacing="0" style="border:1px solid #eee; border-radius:4px; margin:20px 0;">
+                <tr style="background-color:#f8f9fa;">
+                  <td style="font-weight:bold; color:#3D2B1F;">Order #</td>
+                  <td><%= order.order_number || order.id %></td>
+                </tr>
+                <tr>
+                  <td style="font-weight:bold; color:#3D2B1F;">Package</td>
+                  <td><%= order.package_name %></td>
+                </tr>
+                <tr style="background-color:#f8f9fa;">
+                  <td style="font-weight:bold; color:#3D2B1F;">Total</td>
+                  <td>$<%= Number(order.total || 0).toFixed(2) %></td>
+                </tr>
+              </table>
+
+              <h3 style="color:#3D2B1F;">What Happens Next?</h3>
+              <ol style="color:#555; line-height:1.8;">
+                <li>We'll send you a request for a photo of your porch/display area</li>
+                <li>Our design team will create your custom pumpkin display plan</li>
+                <li>We'll schedule your installation and confirm the date</li>
+                <li>Our crew will install your beautiful pumpkin display!</li>
+              </ol>
+
+              <p style="color:#555; line-height:1.6;">If you have any questions, just reply to this email. We can't wait to make your porch look amazing!</p>
+              <p style="color:#E8621A; font-weight:bold;">The Sunshine Pumpkins Team</p>
+            </td>
+          </tr>
+          <!-- Footer -->
+          <tr>
+            <td style="background-color:#3D2B1F; padding:20px; text-align:center;">
+              <p style="color:#999; font-size:12px; margin:0;">Sunshine Pumpkins | St. Petersburg, FL</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

@@ -1,0 +1,70 @@
+<%
+  const dateStr = locals.date || '';
+  const displayDate = dateStr ? new Date(dateStr + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : 'Today';
+%>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h5 class="fw-semibold mb-0"><%= displayDate %></h5>
+    <small class="text-muted"><%= (locals.installs && installs.length) || 0 %> install(s) scheduled</small>
+  </div>
+  <a href="/schedule" class="btn btn-outline-secondary btn-sm">
+    <i class="bi bi-calendar3 me-1"></i> Back to Calendar
+  </a>
+</div>
+
+<div class="card border-0 shadow-sm">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Time Slot</th>
+            <th>Customer</th>
+            <th>Package</th>
+            <th>Address</th>
+            <th>Crew</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (locals.installs && installs.length) { %>
+            <% installs.forEach(function(inst) { %>
+              <tr>
+                <td>
+                  <span class="badge bg-secondary"><%= (inst.time_slot || 'all-day').replace(/\b\w/g, c => c.toUpperCase()) %></span>
+                </td>
+                <td>
+                  <a href="/orders/<%= inst.order_id %>"><%= inst.customer_name %></a>
+                </td>
+                <td><%= inst.package_name %></td>
+                <td class="small"><%= inst.address || 'N/A' %></td>
+                <td><%= inst.crew || '<span class="text-muted">Unassigned</span>' %></td>
+                <td>
+                  <%
+                    const scMap = { scheduled: 'secondary', in_progress: 'warning', completed: 'success', cancelled: 'danger' };
+                    const sColor = scMap[inst.status] || 'secondary';
+                    const sLabel = (inst.status || '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+                  %>
+                  <span class="badge bg-<%= sColor %>"><%= sLabel %></span>
+                </td>
+                <td>
+                  <% if (inst.status !== 'completed' && inst.status !== 'cancelled') { %>
+                    <form action="/schedule/<%= inst.id %>/complete" method="POST" class="d-inline">
+                      <button type="submit" class="btn btn-sm btn-success">
+                        <i class="bi bi-check2 me-1"></i> Complete
+                      </button>
+                    </form>
+                  <% } %>
+                </td>
+              </tr>
+            <% }); %>
+          <% } else { %>
+            <tr><td colspan="7" class="text-center text-muted py-4">No installs scheduled for this date</td></tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

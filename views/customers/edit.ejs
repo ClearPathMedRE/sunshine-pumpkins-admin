@@ -1,0 +1,83 @@
+<%
+  const isNew = !locals.customer || !customer.id;
+  const c = locals.customer || {};
+  const neighborhoods = ['Snell Isle', 'Old Northeast', 'Shore Acres', 'Kenwood', 'Euclid-St. Paul', 'Bahama Shores', 'Crescent Lake', 'Other'];
+  const sources = ['stripe', 'formspree', 'manual', 'referral', 'other'];
+%>
+
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white fw-semibold">
+        <i class="bi bi-person me-1"></i> <%= isNew ? 'Add New Customer' : 'Edit Customer' %>
+      </div>
+      <div class="card-body">
+        <form action="<%= isNew ? '/customers' : '/customers/' + c.id + '/edit' %>" method="POST">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label for="first_name" class="form-label">First Name <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="first_name" name="first_name" value="<%= c.first_name || '' %>" required>
+            </div>
+            <div class="col-md-6">
+              <label for="last_name" class="form-label">Last Name <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="last_name" name="last_name" value="<%= c.last_name || '' %>" required>
+            </div>
+            <div class="col-md-6">
+              <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
+              <input type="email" class="form-control" id="email" name="email" value="<%= c.email || '' %>" required>
+            </div>
+            <div class="col-md-6">
+              <label for="phone" class="form-label">Phone</label>
+              <input type="tel" class="form-control" id="phone" name="phone" value="<%= c.phone || '' %>">
+            </div>
+            <div class="col-12">
+              <label for="address" class="form-label">Address</label>
+              <input type="text" class="form-control" id="address" name="address" value="<%= c.address || '' %>">
+            </div>
+            <div class="col-md-4">
+              <label for="city" class="form-label">City</label>
+              <input type="text" class="form-control" id="city" name="city" value="<%= c.city || '' %>">
+            </div>
+            <div class="col-md-4">
+              <label for="state" class="form-label">State</label>
+              <input type="text" class="form-control" id="state" name="state" value="<%= c.state || '' %>" maxlength="2">
+            </div>
+            <div class="col-md-4">
+              <label for="zip" class="form-label">ZIP</label>
+              <input type="text" class="form-control" id="zip" name="zip" value="<%= c.zip || '' %>" maxlength="10">
+            </div>
+            <div class="col-md-6">
+              <label for="neighborhood" class="form-label">Neighborhood</label>
+              <select class="form-select" id="neighborhood" name="neighborhood">
+                <option value="">Select...</option>
+                <% neighborhoods.forEach(function(n) { %>
+                  <option value="<%= n %>" <%= c.neighborhood === n ? 'selected' : '' %>><%= n %></option>
+                <% }); %>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label for="source" class="form-label">Source</label>
+              <select class="form-select" id="source" name="source">
+                <option value="">Select...</option>
+                <% sources.forEach(function(s) { %>
+                  <option value="<%= s %>" <%= c.source === s ? 'selected' : '' %>><%= s.charAt(0).toUpperCase() + s.slice(1) %></option>
+                <% }); %>
+              </select>
+            </div>
+            <div class="col-12">
+              <label for="notes" class="form-label">Notes</label>
+              <textarea class="form-control" id="notes" name="notes" rows="3"><%= c.notes || '' %></textarea>
+            </div>
+          </div>
+
+          <div class="d-flex gap-2 mt-4">
+            <button type="submit" class="btn" style="background-color: var(--pumpkin); color: #fff;">
+              <i class="bi bi-check-lg me-1"></i> Save
+            </button>
+            <a href="<%= isNew ? '/customers' : '/customers/' + c.id %>" class="btn btn-outline-secondary">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

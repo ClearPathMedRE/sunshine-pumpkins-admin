@@ -1,0 +1,89 @@
+<%
+  const isAdmin = locals.currentUser && currentUser.role === 'admin';
+  function formatCurrency(val) {
+    return '$' + Number(val || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+%>
+
+<h5 class="fw-semibold mb-3"><i class="bi bi-box-seam me-1"></i> Packages</h5>
+
+<div class="row g-3 mb-5">
+  <% if (locals.packages && packages.length) { %>
+    <% packages.forEach(function(pkg) { %>
+      <div class="col-md-6 col-xl-4">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <h5 class="card-title mb-0"><%= pkg.name %></h5>
+              <span class="fs-5 fw-bold" style="color: var(--pumpkin);"><%= formatCurrency(pkg.price) %></span>
+            </div>
+            <p class="text-muted small mb-3"><%= pkg.description || '' %></p>
+            <% if (pkg.features && pkg.features.length) { %>
+              <ul class="list-unstyled small mb-3">
+                <% pkg.features.forEach(function(f) { %>
+                  <li><i class="bi bi-check-circle text-success me-1"></i> <%= f %></li>
+                <% }); %>
+              </ul>
+            <% } %>
+            <div class="d-flex justify-content-between small text-muted mb-2">
+              <span>COGS: <%= formatCurrency(pkg.estimated_cogs_low) %> - <%= formatCurrency(pkg.estimated_cogs_high) %></span>
+              <span>Margin: ~<%= pkg.price > 0 ? Math.round((1 - ((pkg.estimated_cogs_low + pkg.estimated_cogs_high) / 2) / pkg.price) * 100) : 0 %>%</span>
+            </div>
+            <% if (isAdmin) { %>
+              <a href="/packages/<%= pkg.id %>/edit" class="btn btn-sm btn-outline-primary">
+                <i class="bi bi-pencil me-1"></i> Edit
+              </a>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    <% }); %>
+  <% } else { %>
+    <div class="col-12">
+      <p class="text-muted">No packages configured</p>
+    </div>
+  <% } %>
+</div>
+
+<h5 class="fw-semibold mb-3"><i class="bi bi-puzzle me-1"></i> Add-ons</h5>
+
+<div class="card border-0 shadow-sm">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Name</th>
+            <th>Price</th>
+            <th>Description</th>
+            <th>COGS Range</th>
+            <th>Est. Margin</th>
+            <% if (isAdmin) { %><th>Actions</th><% } %>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (locals.addons && addons.length) { %>
+            <% addons.forEach(function(addon) { %>
+              <tr>
+                <td class="fw-semibold"><%= addon.name %></td>
+                <td><%= formatCurrency(addon.price) %></td>
+                <td class="text-muted small"><%= addon.description || '' %></td>
+                <td><%= formatCurrency(addon.estimated_cogs_low) %> - <%= formatCurrency(addon.estimated_cogs_high) %></td>
+                <td>~<%= addon.price > 0 ? Math.round((1 - ((addon.estimated_cogs_low + addon.estimated_cogs_high) / 2) / addon.price) * 100) : 0 %>%</td>
+                <% if (isAdmin) { %>
+                  <td>
+                    <a href="/addons/<%= addon.id %>/edit" class="btn btn-sm btn-outline-primary">
+                      <i class="bi bi-pencil"></i> Edit
+                    </a>
+                  </td>
+                <% } %>
+              </tr>
+            <% }); %>
+          <% } else { %>
+            <tr><td colspan="<%= isAdmin ? 6 : 5 %>" class="text-center text-muted py-3">No add-ons configured</td></tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,102 @@
+<%
+  const isEdit = !!partner;
+  const isAdmin = locals.currentUser && locals.currentUser.role === 'admin';
+%>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="mb-0"><%= isEdit ? 'Edit Partner' : 'New Referral Partner' %></h4>
+  <a href="<%= isEdit ? '/referrals/' + partner.id : '/referrals' %>" class="btn btn-outline-secondary">
+    <i class="bi bi-arrow-left me-1"></i> Back
+  </a>
+</div>
+
+<div class="card border-0 shadow-sm">
+  <div class="card-body">
+    <form action="<%= isEdit ? '/referrals/' + partner.id : '/referrals' %>" method="POST">
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label for="name" class="form-label">Name <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" id="name" name="name" value="<%= isEdit ? partner.name : '' %>" required>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label for="email" class="form-label">Email</label>
+          <input type="email" class="form-control" id="email" name="email" value="<%= isEdit ? partner.email || '' : '' %>">
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-4 mb-3">
+          <label for="phone" class="form-label">Phone</label>
+          <input type="text" class="form-control" id="phone" name="phone" value="<%= isEdit ? partner.phone || '' : '' %>">
+        </div>
+        <div class="col-md-4 mb-3">
+          <label for="company" class="form-label">Company</label>
+          <input type="text" class="form-control" id="company" name="company" value="<%= isEdit ? partner.company || '' : '' %>">
+        </div>
+        <div class="col-md-4 mb-3">
+          <label for="partner_type" class="form-label">Partner Type</label>
+          <select class="form-select" id="partner_type" name="partner_type">
+            <option value="individual" <%= isEdit && partner.partner_type === 'individual' ? 'selected' : '' %>>Individual</option>
+            <option value="realtor" <%= isEdit && partner.partner_type === 'realtor' ? 'selected' : '' %>>Realtor</option>
+            <option value="business" <%= isEdit && partner.partner_type === 'business' ? 'selected' : '' %>>Business</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-4 mb-3">
+          <label for="referral_code" class="form-label">Referral Code</label>
+          <input type="text" class="form-control text-uppercase" id="referral_code" name="referral_code" value="<%= isEdit ? partner.referral_code : '' %>" style="text-transform: uppercase;" placeholder="Auto-generated if blank">
+          <small class="text-muted">Leave blank to auto-generate from name</small>
+        </div>
+        <% if (isEdit) { %>
+        <div class="col-md-4 mb-3">
+          <label for="status" class="form-label">Status</label>
+          <select class="form-select" id="status" name="status">
+            <option value="active" <%= partner.status === 'active' ? 'selected' : '' %>>Active</option>
+            <option value="inactive" <%= partner.status === 'inactive' ? 'selected' : '' %>>Inactive</option>
+          </select>
+        </div>
+        <% } %>
+      </div>
+
+      <hr>
+      <h6 class="mb-3">Kickback Rates (per referral)</h6>
+      <div class="row">
+        <div class="col-md-4 mb-3">
+          <label for="kickback_hello" class="form-label">Harvest Hello ($)</label>
+          <div class="input-group">
+            <span class="input-group-text">$</span>
+            <input type="number" class="form-control" id="kickback_hello" name="kickback_hello" step="0.01" min="0" value="<%= isEdit ? partner.kickback_hello : 25 %>">
+          </div>
+        </div>
+        <div class="col-md-4 mb-3">
+          <label for="kickback_spread" class="form-label">Sunshine Spread ($)</label>
+          <div class="input-group">
+            <span class="input-group-text">$</span>
+            <input type="number" class="form-control" id="kickback_spread" name="kickback_spread" step="0.01" min="0" value="<%= isEdit ? partner.kickback_spread : 50 %>">
+          </div>
+        </div>
+        <div class="col-md-4 mb-3">
+          <label for="kickback_harvest" class="form-label">Grand Harvest ($)</label>
+          <div class="input-group">
+            <span class="input-group-text">$</span>
+            <input type="number" class="form-control" id="kickback_harvest" name="kickback_harvest" step="0.01" min="0" value="<%= isEdit ? partner.kickback_harvest : 100 %>">
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label for="notes" class="form-label">Notes</label>
+        <textarea class="form-control" id="notes" name="notes" rows="3"><%= isEdit ? partner.notes || '' : '' %></textarea>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn" style="background-color: var(--pumpkin); color: #fff;">
+          <i class="bi bi-check-lg me-1"></i> <%= isEdit ? 'Update Partner' : 'Create Partner' %>
+        </button>
+        <a href="<%= isEdit ? '/referrals/' + partner.id : '/referrals' %>" class="btn btn-outline-secondary">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,8 @@
+<% if (locals.flash && flash.message) { %>
+  <% const typeMap = { success: 'alert-success', danger: 'alert-danger', error: 'alert-danger', warning: 'alert-warning', info: 'alert-info' }; %>
+  <% const alertClass = typeMap[flash.type] || 'alert-info'; %>
+  <div class="alert <%= alertClass %> alert-dismissible fade show" role="alert">
+    <%= flash.message %>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+<% } %>
