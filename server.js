@@ -10,29 +10,45 @@ const path = require('path');
 const { requireAuth } = require('./middleware/auth');
 const locals = require('./middleware/locals');
 
-// Ensure admin user exists and password matches env on every startup
-(function syncAdminUser() {
+// Run migrations and sync admin user on startup
+(function startupSync() {
   try {
     const db = require('./config/database');
     const bcrypt = require('bcryptjs');
+    const fs = require('fs');
+
+    // Run markets migration if not already applied
+    try {
+      const migrationPath = require('path').resolve(__dirname, 'migrations', '003_markets.sql');
+      if (fs.existsSync(migrationPath)) {
+        const sql = fs.readFileSync(migrationPath, 'utf8');
+        const stmts = sql.split(';').map(s => s.trim()).filter(s => s.length > 0);
+        for (const stmt of stmts) {
+          try { db.exec(stmt + ';'); } catch (e) { /* already exists */ }
+        }
+        console.log('Markets migration ensured.');
+      }
+    } catch (e) {
+      console.log('Migration skip:', e.message);
+    }
+
+    // Sync admin user credentials from env
     const adminEmail = process.env.ADMIN_EMAIL || 'sunshinepumpkins1@gmail.com';
     const adminPassword = process.env.ADMIN_PASSWORD || 'SunshinePumpkins2026!';
     const existing = db.prepare('SELECT id, email FROM users WHERE role = ?').get('admin');
     if (existing) {
-      // Update email and password to match env
       const hash = bcrypt.hashSync(adminPassword, 12);
       db.prepare('UPDATE users SET email = ?, password_hash = ?, updated_at = datetime(\'now\') WHERE id = ?')
         .run(adminEmail, hash, existing.id);
       console.log(`Admin user synced: ${adminEmail}`);
     } else {
-      // Create admin user
       const hash = bcrypt.hashSync(adminPassword, 12);
       db.prepare('INSERT INTO users (email, password_hash, name, role) VALUES (?, ?, ?, ?)')
         .run(adminEmail, hash, 'Admin', 'admin');
       console.log(`Admin user created: ${adminEmail}`);
     }
   } catch (e) {
-    console.error('Admin sync error:', e.message);
+    console.error('Startup sync error:', e.message);
   }
 })();
 
